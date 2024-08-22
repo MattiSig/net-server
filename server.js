@@ -2,20 +2,28 @@ import net from "net";
 
 const PORT = process.env.PORT || 3000;
 
-const server = net.createServer();
+const server = net.createServer((socket) => {
+  console.log("Client connected"); // Handle incoming data (HTTP request)
+  socket.on("data", (data) => {
+    // Send a basic HTTP response
+    const httpResponse =
+      "HTTP/1.1 200 OK\r\n" +
+      "Content-Type: text/plain\r\n" +
+      "Content-Length: 13\r\n" +
+      "\r\n" +
+      "Hello, world!";
 
-server.on("connection", (socket) => {
-  console.log("client connected");
+    socket.write(httpResponse, "utf8", (err) => {
+      console.error(err);
+    });
+    socket.end(); // Close the connection after sending the response
+  });
 
-  socket.addListener("data", (msg) => {
-    console.log(msg.toString());
-
-    socket.write("Hello client! 🎉", "utf8");
+  socket.on("end", () => {
+    console.log("Client disconnected");
   });
 });
 
-server.listen(PORT);
-
-server.on("listening", () => {
-  console.log(`server listening on port ${PORT}`);
+server.listen(PORT, () => {
+  console.log(`Frigging HTTP server listening on port ${PORT}`);
 });
